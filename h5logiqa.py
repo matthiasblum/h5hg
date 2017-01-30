@@ -162,7 +162,7 @@ class H5Dset:
 
         con = sqlite3.connect(self.db)
         cur = con.cursor()
-        cur.execute('SELECT name, start, end, fw_strand '
+        cur.execute('SELECT symbol, start, end, fw_strand '
                     'FROM gene '
                     'WHERE chrom=:chrom '
                     'AND assembly=:assembly '

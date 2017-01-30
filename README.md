@@ -23,11 +23,13 @@ If you want to include genes to the figure, you need to pass the genome assembly
 
     >>> mat = H5Dset("/home/data/hESC.h5", "hg19", "/home/data/genes.db")
     
+The SQLite datbase can ge generated with [qcgenomics-genedb](https://github.com/matthiasblum/qcgenomics-genedb).
+    
 ### Retrieving data for a given genomic region
 
     >>> mat.get("chr3", 181399711, 181459711)
     
-Please note that the `get()` function does not return anything.
+The `get()` function does return the data. They are stored internally in the `H5Dset` object.
 By default, frequency counts are retrieved. To retrieve loops' dispersion (90%, 70% or 50%) pass the desired dispersion with the `sampling` argument.
 
     >>> mat.get("chr3", 181399711, 181459711, sampling=70)
@@ -35,6 +37,8 @@ By default, frequency counts are retrieved. To retrieve loops' dispersion (90%, 
 You can filter loops with a minimum contact count threshold with the `count` argument, or with a maximum dispersion threshold with the `disp` argument:
 
     >>> mat.get("chr3", 181399711, 181459711, sampling=50, count=5, disp=10)
+    
+Passing 0 for the `start` and `end` arguments will retrieve the entire chromosome.
     
 ### Plotting data
 
@@ -50,4 +54,10 @@ The `plot()` method returns the path of the generated image. If Gnuplot is not i
 You can tweak the scale limit with the `vmax` argument, and generate a triangular display instead of a square one with the `astriu` argument:
 
     >>> mat.plot(vmax=100, astriu=True)
+    
+## Chaining
+
+If you need to retrieve only one region at a time, you can chain the methods:
+
+    >>> H5Dset("/home/data/hESC.h5").get("chr1", 181399711, 181459711).plot()
     
