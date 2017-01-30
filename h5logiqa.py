@@ -267,7 +267,7 @@ class H5Dset:
         mat[0, 0] = self.matsize
         mat[0, 1:] = np.arange(self.matsize)
         mat[1:, 0] = np.arange(self.matsize)
-        mat[1:, 1:] = np.tri(mat_data) + np.triu(mat_data, 1).T
+        mat[1:, 1:] = np.triu(mat_data) + np.triu(mat_data, 1).T
 
         # Write the matrix to a temporary binary file
         bin_file = _mkstemp()
