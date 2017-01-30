@@ -4,7 +4,7 @@ Accessing Hi-C data stored in LOGIQA HDF5 files
 ## Requirements
 
 The API requires to following dependencies:
-- Python (&ge; 3) with the *h5py*, *numpy*, and *scipy*, and *tornado* modules
+- Python (&ge; 3) with the *h5py*, *numpy*, and *scipy* modules
 - Gnuplot (&ge; 4.6.6, not tested with more recent versions)
 
 ## Usage
@@ -19,7 +19,7 @@ Basic usage below:
 
     >>> mat = H5Dset("/home/data/hESC.h5")
     
-If you want to plot the genes, you need to pass the genome asse;bly and an SQLite database as well:
+If you want to include genes to the figure, you need to pass the genome assembly and an SQLite database as well:
 
     >>> mat = H5Dset("/home/data/hESC.h5", "hg19", "/home/data/genes.db")
     
@@ -28,7 +28,7 @@ If you want to plot the genes, you need to pass the genome asse;bly and an SQLit
     >>> mat.get("chr3", 181399711, 181459711)
     
 Please note that the `get()` function does not return anything.
-By default, frequency counts are retrieved. To retrieve a dispersion (90%, 70% or 50%) pass it with the `sampling` argument.
+By default, frequency counts are retrieved. To retrieve loops' dispersion (90%, 70% or 50%) pass the desired dispersion with the `sampling` argument.
 
     >>> mat.get("chr3", 181399711, 181459711, sampling=70)
     
@@ -38,10 +38,16 @@ You can filter loops with a minimum contact count threshold with the `count` arg
     
 ### Plotting data
 
+Generate a figure of the retrieved data:
+
     >>> mat.plot()
     /tmp/tmp.4gHaOMFGjz
     
 The `plot()` method returns the path of the generated image. If Gnuplot is not in your `PATH`, pass the binary's path as follows:
 
     >>> mat.plot(gnuplot="/programs/gnuplot-4.6.6/src/gnuplot")
+    
+You can tweak the scale limit with the `vmax` argument, and generate a triangular display instead of a square one with the `astriu` argument:
+
+    >>> mat.plot(vmax=100, astriu=True)
     
