@@ -1,5 +1,5 @@
-# h5logiqa
-Accessing Hi-C data stored in LOGIQA HDF5 files
+# h5hg
+Accessing NGS data (ChIP-Seq, Hi-C) stored in HDF5 files.
 
 ## Requirements
 
@@ -7,21 +7,21 @@ The API requires to following dependencies:
 - Python (&ge; 3) with the *h5py*, *numpy*, and *scipy* modules.
 - Gnuplot (&ge; 4.6.6, not tested with more recent versions) with the *pngcairo* terminal.
 
-## Usage
+## Hi-C loops
 
 Basic usage below:
 
 ### Loading the module
 
-    >>> from h5logiqa import H5Dset
+    >>> from h5hg import Matrix
     
 ### Opening an HDF5 file
 
-    >>> mat = H5Dset("/home/data/hESC.h5")
+    >>> mat = Matrix("/home/data/hESC-40kb.h5")
     
 If you want to include genes to the figure, you need to pass the genome assembly and an SQLite database as well:
 
-    >>> mat = H5Dset("/home/data/hESC.h5", "hg19", "/home/data/genes.db")
+    >>> mat = Matrix("/home/data/hESC-40kb.h5", "hg19", "/home/data/genes.db")
     
 The SQLite datbase can be generated with [Gégène](https://github.com/matthiasblum/gegene).
     
@@ -59,5 +59,10 @@ You can tweak the scale limit with the `vmax` argument, and generate a triangula
 
 If you need to retrieve only one region at a time, you can chain the methods:
 
-    >>> H5Dset("/home/data/hESC.h5").get("chr1", 181399711, 181459711).plot()
+    >>> H5Dset("/home/data/hESC-40kb.h5").get("chr1", 181399711, 181459711).plot()
     
+## ChIP-Seq
+
+    >>> from h5hg import Array
+    >>> arr = Array("/home/data/hESC-H3K4me3.h5")
+    >>> arr.get("chr8", 128723314, 128773314)

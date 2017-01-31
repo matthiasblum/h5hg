@@ -13,25 +13,83 @@ import numpy as np
 from scipy import sparse
 
 
-def _mkstemp():
-    fd, filename = tempfile.mkstemp()
-    os.close(fd)
-    return filename
+class Array:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def get(self, chrom, start, end, localqc=True, wig=True, wigu=True, shrink=False):
+        localqc_res = 500
+        localqc_data = None
+        wig_res = 0
+        wig_data = None
+        wigu_data = None
+        region_size = end - start
+
+        with h5py.File(self.filename, 'r') as fh:
+            grp = fh.get(chrom)
+
+            if grp is None:
+                sys.stderr.write('{} not found in {}\n'.format(chrom, self.filename))
+                return None
+
+            if localqc:
+                dset = grp.get('localqcs')
+
+                # Select data within interval
+                localqc_data = dset[start // localqc_res:(end + localqc_res - 1) // localqc_res]
+
+                # Set dispersion to -1 when bin is empty (does not contain any read)
+                localqc_data['dispersion'][localqc_data['intensity'] == 0] = -1
+
+                if shrink:
+                    while localqc_res * 3000 < region_size:
+                        if localqc_data.size % 2:
+                            localqc_data = localqc_data[:-1]
+
+                        localqc_res *= 2
+                        localqc_data = localqc_data.reshape(localqc_data.size // 2, 2).max(axis=1)
+
+                localqc_data = localqc_data.tolist()
+
+            if wig:
+                wig_res = int(fh.get('span')[()])
+                dset = grp.get('wigs')
+
+                # Select data within interval
+                data = dset[start // wig_res:(end + wig_res - 1) // wig_res]
+                wig_data = data[:, 0]
+                if wigu:
+                    wigu_data = data[:, 1]
+
+                if shrink:
+                    while wig_res * 3000 < region_size:
+                        if wig_data.size % 2:
+                            wig_data = wig_data[:-1]
+
+                            if wigu:
+                                wigu_data = wigu_data[:-1]
+
+                        wig_res *= 2
+                        wig_data = wig_data.reshape(wig_data.size // 2, 2).max(axis=1)
+
+                        if wigu:
+                            wigu_data = wigu_data.reshape(wigu_data.size // 2, 2).max(axis=1)
+
+                wig_data = wig_data.tolist()
+
+                if wigu:
+                    wigu_data = wigu_data.tolist()
+
+        return {
+            'localqc': localqc_data,
+            'localqcres': localqc_res,
+            'wig': wig_data,
+            'wigu': wigu_data,
+            'wigres': wig_res
+        }
 
 
-def _calc_tics_step(length):
-    first_digit = int(str(length)[0])
-    if first_digit == 1:
-        step = pow(10, math.floor(math.log10(length + 1)) - 1) * 2
-    elif first_digit < 5:
-        step = pow(10, math.floor(math.log10(length + 1)) - 1) * 5
-    else:
-        step = pow(10, math.floor(math.log10(length + 1)) - 1) * 10
-
-    return int(step)
-
-
-class H5Dset:
+class Matrix:
     def __init__(self, filename, assembly=None, db=None):
         # HDF5 file
         self.filename = filename
@@ -250,6 +308,24 @@ class H5Dset:
                     self.labels.append([[label_start, label_text, False]])
                     break
 
+    @staticmethod
+    def _mkstemp():
+        fd, filename = tempfile.mkstemp()
+        os.close(fd)
+        return filename
+
+    @staticmethod
+    def _calc_tics_step(length):
+        first_digit = int(str(length)[0])
+        if first_digit == 1:
+            step = pow(10, math.floor(math.log10(length + 1)) - 1) * 2
+        elif first_digit < 5:
+            step = pow(10, math.floor(math.log10(length + 1)) - 1) * 5
+        else:
+            step = pow(10, math.floor(math.log10(length + 1)) - 1) * 10
+
+        return int(step)
+
     def plot(self, **kwargs):
         astriu = kwargs.get('astriu', False)
         vmax = kwargs.get('vmax', self.p90)
@@ -281,7 +357,7 @@ class H5Dset:
         mat[1:, 1:] = np.triu(mat_data) + np.triu(mat_data, 1).T
 
         # Write the matrix to a temporary binary file
-        bin_file = _mkstemp()
+        bin_file = self._mkstemp()
         with open(bin_file, 'wb') as fh:
             fh.write(mat.tostring())
 
@@ -296,7 +372,7 @@ class H5Dset:
 
         # Define x-axis tics considering the number of cells to plot on the x-axis
         length = self.end - self.start
-        step = _calc_tics_step(length)
+        step = self._calc_tics_step(length)
         if length <= self.resolution:
             step *= 2
 
@@ -305,8 +381,8 @@ class H5Dset:
             tics.append((x, float(x - self.start) / self.resolution))
 
         # Write Gnuplot script
-        script = _mkstemp()
-        output = _mkstemp()
+        script = self._mkstemp()
+        output = self._mkstemp()
         with open(script, 'w') as fh:
             fh.write("set terminal pngcairo size {},{} enhanced font 'sans,{}'\n".format(width, height, ft_size_default))
 
