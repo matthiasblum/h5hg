@@ -12,4 +12,5 @@ setup(
     url='https://github.com/matthiasblum/h5hg',
     py_modules=['h5hg'],
     zip_safe=False,
+    install_requires=['numpy', 'scipy', 'h5py']
 )
