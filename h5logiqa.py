@@ -414,3 +414,12 @@ class H5Dset:
         os.unlink(bin_file)
 
         return output
+
+    def todict(self):
+        return {
+            'rows': self.rows.tolist(),
+            'cols': self.cols.tolist(),
+            'values': self.values.tolist(),
+            'matsize': int(self.matsize),
+            'p90': float(self.p90)
+        }
