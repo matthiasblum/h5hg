@@ -4,8 +4,8 @@ Accessing Hi-C data stored in LOGIQA HDF5 files
 ## Requirements
 
 The API requires to following dependencies:
-- Python (&ge; 3) with the *h5py*, *numpy*, and *scipy* modules
-- Gnuplot (&ge; 4.6.6, not tested with more recent versions)
+- Python (&ge; 3) with the *h5py*, *numpy*, and *scipy* modules.
+- Gnuplot (&ge; 4.6.6, not tested with more recent versions) with the *pngcairo* terminal.
 
 ## Usage
 
@@ -23,7 +23,7 @@ If you want to include genes to the figure, you need to pass the genome assembly
 
     >>> mat = H5Dset("/home/data/hESC.h5", "hg19", "/home/data/genes.db")
     
-The SQLite datbase can ge generated with [qcgenomics-genedb](https://github.com/matthiasblum/qcgenomics-genedb).
+The SQLite datbase can be generated with [Gégène](https://github.com/matthiasblum/gegene).
     
 ### Retrieving data for a given genomic region
 
