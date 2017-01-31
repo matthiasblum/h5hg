@@ -328,7 +328,7 @@ class Matrix:
 
     def plot(self, **kwargs):
         astriu = kwargs.get('astriu', False)
-        vmax = kwargs.get('vmax', self.p90)
+        vmax = kwargs.get('vmax')
         width = kwargs.get('width', 1400.)
         colors = kwargs.get('colors',
                             ['#3288BD', '#66C2A5', '#ABDDA4', '#E6F598', '#FEE08B', '#FDAE61', '#F46D43', '#D53E4F'])
@@ -336,6 +336,8 @@ class Matrix:
 
         if self.matsize is None:
             return None
+        elif vmax is None:
+            vmax = self.p90
 
         # Create dense matrix
         if self.usecounts:
