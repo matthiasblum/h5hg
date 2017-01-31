@@ -23,7 +23,7 @@ If you want to include genes to the figure, you need to pass the genome assembly
 
     >>> mat = Matrix("/home/data/hESC-40kb.h5", "hg19", "/home/data/genes.db")
     
-The SQLite datbase can be generated with [Gégène](https://github.com/matthiasblum/gegene).
+The SQLite database can be generated with [Gégène](https://github.com/matthiasblum/gegene).
     
 ### Retrieving data for a given genomic region
 
