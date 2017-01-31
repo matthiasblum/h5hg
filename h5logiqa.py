@@ -4,6 +4,7 @@
 import math
 import os
 import sqlite3
+import sys
 import tempfile
 from subprocess import Popen, PIPE
 
@@ -71,9 +72,16 @@ class H5Dset:
         maxdisp = kwargs.get('disp', 100)
         gene = kwargs.get('gene')
 
+        # If matsize stays None, it means we could not retrieve data
+        self.matsize = None
+
         # Read data from HDF5 file
         with h5py.File(self.filename, 'r') as fh:
             dset = fh.get(chrom)
+
+            if dset is None:
+                sys.stderr.write('{} not found in {}\n'.format(chrom, self.filename))
+                return self
 
             chromsize = dset.attrs['size']
             matsize = dset.attrs['matsize']
@@ -249,6 +257,9 @@ class H5Dset:
         colors = kwargs.get('colors',
                             ['#3288BD', '#66C2A5', '#ABDDA4', '#E6F598', '#FEE08B', '#FDAE61', '#F46D43', '#D53E4F'])
         gnuplot = kwargs.get('gnuplot', 'gnuplot')
+
+        if self.matsize is None:
+            return None
 
         # Create dense matrix
         if self.usecounts:
