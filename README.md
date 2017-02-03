@@ -59,7 +59,7 @@ You can tweak the scale limit with the `vmax` argument, and generate a triangula
 
 If you need to retrieve only one region at a time, you can chain the methods:
 
-    >>> H5Dset("/home/data/hESC-40kb.h5").get("chr1", 181399711, 181459711).plot()
+    >>> Matrix("/home/data/hESC-40kb.h5").get("chr1", 181399711, 181459711).plot()
     
 ## ChIP-Seq
 
