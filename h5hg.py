@@ -52,7 +52,7 @@ class Array:
                 localqc_data = localqc_data.tolist()
 
             if wig:
-                wig_res = int(fh.get('span')[()])
+                wig_res = grp.attrs['span']
                 dset = grp.get('wigs')
 
                 # Select data within interval
