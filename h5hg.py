@@ -231,7 +231,7 @@ class Matrix:
         cur.execute('SELECT symbol, start, end, fw_strand '
                     'FROM gene '
                     'WHERE chrom=:chrom '
-                    'AND assembly=:assembly'
+                    'AND assembly=:assembly '
                     'AND flag=1 '
                     'AND ((start BETWEEN :min AND :max) '
                     'OR (end BETWEEN :min AND :max) '
