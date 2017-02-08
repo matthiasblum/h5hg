@@ -41,18 +41,8 @@ class Array:
                 # Set dispersion to -1 when bin is empty (does not contain any read)
                 localqc_data['dispersion'][localqc_data['intensity'] == 0] = -1
 
-                if shrink:
-                    while localqc_res * 3000 < region_size:
-                        if localqc_data.size % 2:
-                            localqc_data = localqc_data[:-1]
-
-                        localqc_res *= 2
-                        localqc_data = localqc_data.reshape(localqc_data.size // 2, 2).max(axis=1)
-
-                localqc_data = localqc_data.tolist()
-
             if wig:
-                wig_res = grp.attrs['span']
+                wig_res = int(grp.attrs['span'])
                 dset = grp.get('wigs')
 
                 # Select data within interval
@@ -61,19 +51,30 @@ class Array:
                 if wigu:
                     wigu_data = data[:, 1]
 
-                if shrink:
-                    while wig_res * 3000 < region_size:
-                        if wig_data.size % 2:
-                            wig_data = wig_data[:-1]
+        if shrink:
+            if localqc:
+                while localqc_res * 3000 < region_size:
+                    if localqc_data.size % 2:
+                        localqc_data = localqc_data[:-1]
 
-                            if wigu:
-                                wigu_data = wigu_data[:-1]
+                    localqc_res *= 2
+                    localqc_data = localqc_data.reshape(localqc_data.size // 2, 2).max(axis=1)
 
-                        wig_res *= 2
-                        wig_data = wig_data.reshape(wig_data.size // 2, 2).max(axis=1)
+                localqc_data = localqc_data.tolist()
+
+            if wig:
+                while wig_res * 3000 < region_size:
+                    if wig_data.size % 2:
+                        wig_data = wig_data[:-1]
 
                         if wigu:
-                            wigu_data = wigu_data.reshape(wigu_data.size // 2, 2).max(axis=1)
+                            wigu_data = wigu_data[:-1]
+
+                    wig_res *= 2
+                    wig_data = wig_data.reshape(wig_data.size // 2, 2).max(axis=1)
+
+                    if wigu:
+                        wigu_data = wigu_data.reshape(wigu_data.size // 2, 2).max(axis=1)
 
                 wig_data = wig_data.tolist()
 
