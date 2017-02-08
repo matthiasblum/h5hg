@@ -65,4 +65,19 @@ If you need to retrieve only one region at a time, you can chain the methods:
 
     >>> from h5hg import Array
     >>> arr = Array("/home/data/hESC-H3K4me3.h5")
-    >>> arr.get("chr8", 128723314, 128773314)
+    >>> data = arr.get("chr8", 128723314, 128773314)
+
+The `get()` function accepts the following optional arguments:
+- *localqc*: if True, retrieves the localQCs in the genomic region (default: True)
+- *wig*: if True, retrieves the wiggles in the genomic region (default: True)
+- *wigu*: if True, Wiggles for unique reads are retrieved as well (default: True)
+- *shrink*: if True, merge the data to reduce the resolution for long genomic regions (default: False)
+
+`data` is a dictionary with the following keys/values:
+- *localqc*: list of bins. Each bin is a tuple `(intensity, dispersion)`. If the intensity was lower than the background threshold or if the dispersion was greater than or equal to 10, the intensity is 0 and the dispersion -1.
+- *localqcres*: int, resolution of bins.
+- *wig*: list of wiggles.
+- *wigu*: list of wiggles for unique reads.
+- *wigres*: int, resolution of Wiggles.
+
+If the genomic region is invalid, `data` is None.

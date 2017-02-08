@@ -32,6 +32,13 @@ class Array:
                 sys.stderr.write('{} not found in {}\n'.format(chrom, self.filename))
                 return None
 
+            chrom_size = int(grp.attrs['size'])
+
+            if start < 0:
+                start = 0
+            if end >= chrom_size:
+                end = chrom_size - 1
+
             if localqc:
                 dset = grp.get('localqcs')
 
@@ -51,8 +58,8 @@ class Array:
                 if wigu:
                     wigu_data = data[:, 1]
 
-        if shrink:
-            if localqc:
+        if localqc:
+            if shrink:
                 while localqc_res * 3000 < region_size:
                     if localqc_data.size % 2:
                         localqc_data = localqc_data[:-1]
@@ -60,9 +67,10 @@ class Array:
                     localqc_res *= 2
                     localqc_data = localqc_data.reshape(localqc_data.size // 2, 2).max(axis=1)
 
-                localqc_data = localqc_data.tolist()
+            localqc_data = localqc_data.tolist()
 
-            if wig:
+        if wig:
+            if shrink:
                 while wig_res * 3000 < region_size:
                     if wig_data.size % 2:
                         wig_data = wig_data[:-1]
@@ -76,10 +84,10 @@ class Array:
                     if wigu:
                         wigu_data = wigu_data.reshape(wigu_data.size // 2, 2).max(axis=1)
 
-                wig_data = wig_data.tolist()
+            wig_data = wig_data.tolist()
 
-                if wigu:
-                    wigu_data = wigu_data.tolist()
+            if wigu:
+                wigu_data = wigu_data.tolist()
 
         return {
             'localqc': localqc_data,
