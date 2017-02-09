@@ -515,10 +515,13 @@ class Matrix:
         return output
 
     def todict(self):
-        return {
-            'rows': self.rows.tolist(),
-            'cols': self.cols.tolist(),
-            'values': self.values.tolist(),
-            'matsize': int(self.matsize),
-            'p90': float(self.p90)
-        }
+        if self.matsize is None:
+            return None
+        else:
+            return {
+                'rows': self.rows.tolist(),
+                'cols': self.cols.tolist(),
+                'values': self.values.tolist(),
+                'matsize': int(self.matsize),
+                'p90': float(self.p90)
+            }
