@@ -48,6 +48,9 @@ class Array:
                 # Set dispersion to -1 when bin is empty (does not contain any read)
                 localqc_data['dispersion'][localqc_data['intensity'] == 0] = -1
 
+                # Keep only the dispersion
+                localqc_data = localqc_data['dispersion']
+
             if wig:
                 wig_res = int(grp.attrs['span'])
                 dset = grp.get('wigs')
