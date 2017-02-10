@@ -10,7 +10,7 @@ from subprocess import Popen, PIPE
 
 import h5py
 import numpy as np
-from scipy import sparse
+from scipy.sparse import coo_matrix
 
 
 class Array:
@@ -354,7 +354,7 @@ class Matrix:
 
         # Create dense matrix
         if self.usecounts:
-            mat_data = sparse.coo_matrix(
+            mat_data = coo_matrix(
                 (self.values, (self.rows, self.cols)),
                 shape=(self.matsize, self.matsize),
                 dtype=np.int32
