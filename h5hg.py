@@ -17,7 +17,7 @@ class Array:
     def __init__(self, filename):
         self.filename = filename
 
-    def get(self, chrom, start, end, localqc=True, wig=True, wigu=True, shrink=False):
+    def get(self, chrom, start, end, localqc=True, wig=True, wigu=True, shrink=0):
         localqc_res = 500
         localqc_data = None
         wig_res = 0
@@ -60,7 +60,7 @@ class Array:
 
         if localqc:
             if shrink:
-                while localqc_res * 3000 < region_size:
+                while localqc_res * shrink < region_size:
                     if localqc_data.size % 2:
                         localqc_data = localqc_data[:-1]
 
@@ -71,7 +71,7 @@ class Array:
 
         if wig:
             if shrink:
-                while wig_res * 3000 < region_size:
+                while wig_res * shrink < region_size:
                     if wig_data.size % 2:
                         wig_data = wig_data[:-1]
 
