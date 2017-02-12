@@ -29,7 +29,7 @@ The SQLite database can be generated with [Gégène](https://github.com/matthias
 
     >>> mat.get("chr3", 181399711, 181459711)
     
-The `get()` function does return the data. They are stored internally in the `Matrix` object.
+The `get()` function does not return the data. They are stored internally in the `Matrix` object.
 By default, frequency counts are retrieved. To retrieve loops' dispersion (90%, 70% or 50%) pass the desired dispersion with the `sampling` argument.
 
     >>> mat.get("chr3", 181399711, 181459711, sampling=70)
