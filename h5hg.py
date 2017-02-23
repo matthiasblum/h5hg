@@ -136,6 +136,9 @@ class Matrix:
         # Boolean indicating if we return contact counts or dispersion
         self.usecounts = True
 
+        # Matrix index of the first bin
+        self.x = None
+
     def get(self, chrom, start=0, end=0, **kwargs):
         sampling = kwargs.get('sampling', 100)
         mincount = kwargs.get('count', 0)
@@ -225,8 +228,9 @@ class Matrix:
 
             self.values = data['disp50']
 
-        self.rows = data['row'] - x
-        self.cols = data['col'] - x
+        self.rows = data['row']
+        self.cols = data['col']
+        self.x = x
 
         if gene and self.assembly and self.db:
             self._get_genes(gene, minsize=kwargs.get('minsize', 1), maxlevels=kwargs.get('maxlevels', 5))
@@ -355,14 +359,14 @@ class Matrix:
         # Create dense matrix
         if self.usecounts:
             mat_data = coo_matrix(
-                (self.values, (self.rows, self.cols)),
+                (self.values, (self.rows - self.x, self.cols - self.x)),
                 shape=(self.matsize, self.matsize),
                 dtype=np.int32
             ).todense()
         else:
             mat_data = np.empty(shape=(self.matsize, self.matsize), dtype=np.float32)
             mat_data[np.triu_indices(self.matsize)] = 100  # default value is the highest possible dispersion
-            mat_data[self.rows, self.cols] = self.values
+            mat_data[self.rows - self.x, self.cols - self.x] = self.values
 
         # Create a matrix containing the row/col indices
         mat = np.zeros(shape=(self.matsize + 1, self.matsize + 1), dtype=np.float32)
@@ -517,13 +521,13 @@ class Matrix:
 
         return output
 
-    def todict(self):
+    def todict(self, subtract=False):
         if self.matsize is None:
             return None
         else:
             return {
-                'rows': self.rows.tolist(),
-                'cols': self.cols.tolist(),
+                'rows': (self.rows - self.x).tolist() if subtract else self.rows.tolist(),
+                'cols': (self.cols - self.x).tolist() if subtract else self.cols.tolist(),
                 'values': self.values.tolist(),
                 'matsize': int(self.matsize),
                 'p90': float(self.p90)
