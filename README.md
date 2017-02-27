@@ -74,7 +74,7 @@ The `get()` function accepts the following optional arguments:
 - *shrink*: reduce the resolution so `resolution × shrink < region_length` by merging genomic features (default: 0, disabled)
 
 `data` is a dictionary with the following keys/values:
-- *localqc*: list of bins. Each bin is a tuple `(intensity, dispersion)`. If the intensity was lower than the background threshold or if the dispersion was greater than or equal to 10, the intensity is 0 and the dispersion -1.
+- *localqc*: list of localQC dispersions. If the intensity was lower than the background threshold or if the dispersion was greater than or equal to 10, the intensity is 0 and the dispersion -1.
 - *localqcres*: int, resolution of bins.
 - *wig*: list of wiggles.
 - *wigu*: list of wiggles for unique reads.
