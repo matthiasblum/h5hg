@@ -232,12 +232,12 @@ class Matrix:
         self.cols = data['col']
         self.x = x
 
-        if gene and self.assembly and self.db:
+        if self.assembly and self.db:
             self._get_genes(gene, minsize=kwargs.get('minsize', 1), maxlevels=kwargs.get('maxlevels', 5))
 
         return self
 
-    def _get_genes(self, gene, minsize=1, maxlevels=5):
+    def _get_genes(self, gene=None, minsize=1, maxlevels=5):
         _genes = []
         self.genes = []
         self.labels = [[]]
