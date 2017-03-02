@@ -16,21 +16,25 @@ from scipy.sparse import coo_matrix
 class Array:
     def __init__(self, filename):
         self.filename = filename
+        self.localqc_res = 500
+        self.localqc_data = None
+        self.wig_res = 0
+        self.wig_data = None
+        self.wigu_data = None
 
-    def get(self, chrom, start, end, localqc=True, wig=True, wigu=True, shrink=0):
-        localqc_res = 500
-        localqc_data = None
-        wig_res = 0
-        wig_data = None
-        wigu_data = None
-        region_size = end - start
+    def _get(self, chrom, start, end, localqc=True, wig=True, wigu=True):
+        self.localqc_res = 500
+        self.localqc_data = None
+        self.wig_res = 0
+        self.wig_data = None
+        self.wigu_data = None
 
         with h5py.File(self.filename, 'r') as fh:
             grp = fh.get(chrom)
 
             if grp is None:
                 sys.stderr.write('{} not found in {}\n'.format(chrom, self.filename))
-                return None
+                return False
 
             chrom_size = int(grp.attrs['size'])
 
@@ -43,61 +47,78 @@ class Array:
                 dset = grp.get('localqcs')
 
                 # Select data within interval
-                localqc_data = dset[start // localqc_res:(end + localqc_res - 1) // localqc_res]
-
-                # Set dispersion to -1 when bin is empty (does not contain any read)
-                localqc_data['dispersion'][localqc_data['intensity'] == 0] = -1
-
-                # Keep only the dispersion
-                localqc_data = localqc_data['dispersion']
+                self.localqc_data = dset[start // self.localqc_res:(end + self.localqc_res - 1) // self.localqc_res]
 
             if wig:
-                wig_res = int(grp.attrs['span'])
+                self.wig_res = int(grp.attrs['span'])
                 dset = grp.get('wigs')
 
                 # Select data within interval
-                data = dset[start // wig_res:(end + wig_res - 1) // wig_res]
-                wig_data = data[:, 0]
+                data = dset[start // self.wig_res:(end + self.wig_res - 1) // self.wig_res]
+                self.wig_data = data[:, 0]
                 if wigu:
-                    wigu_data = data[:, 1]
+                    self.wigu_data = data[:, 1]
+
+        return True
+
+    def get(self, chrom, start, end, localqc=True, wig=True, wigu=True, nreps=0, shrink=0):
+        if not self._get(chrom, start, end, localqc, wig, wigu):
+            return None
+
+        region_size = end - start
 
         if localqc:
+            if nreps:
+                # Use 5-replicates
+                flag = {0: 0, 1: 1, 2: 2, 3: 4, 4: 8, 5: 16}.get(nreps, 16)
+
+                # Set dispersion to -1 when localqc does not pass the number of replicates
+                self.localqc_data['dispersion'][np.bitwise_and(self.localqc_data['flag'], flag) == 0] = -1
+            else:
+                # Use 1-replicate
+
+                # Set dispersion to -1 when bin is empty (does not contain any read)
+                self.localqc_data['dispersion'][self.localqc_data['intensity'] == 0] = -1
+
+            # Keep only the dispersion
+            self.localqc_data = self.localqc_data['dispersion']
+
             if shrink:
-                while localqc_res * shrink < region_size:
-                    if localqc_data.size % 2:
-                        localqc_data = localqc_data[:-1]
+                while self.localqc_res * shrink < region_size:
+                    if self.localqc_data.size % 2:
+                        self.localqc_data = self.localqc_data[:-1]
 
-                    localqc_res *= 2
-                    localqc_data = localqc_data.reshape(localqc_data.size // 2, 2).max(axis=1)
+                    self.localqc_res *= 2
+                    self.localqc_data = self.localqc_data.reshape(self.localqc_data.size // 2, 2).max(axis=1)
 
-            localqc_data = localqc_data.tolist()
+                self.localqc_data = self.localqc_data.tolist()
 
         if wig:
             if shrink:
-                while wig_res * shrink < region_size:
-                    if wig_data.size % 2:
-                        wig_data = wig_data[:-1]
+                while self.wig_res * shrink < region_size:
+                    if self.wig_data.size % 2:
+                        self.wig_data = self.wig_data[:-1]
 
                         if wigu:
-                            wigu_data = wigu_data[:-1]
+                            self.wigu_data = self.wigu_data[:-1]
 
-                    wig_res *= 2
-                    wig_data = wig_data.reshape(wig_data.size // 2, 2).max(axis=1)
+                    self.wig_res *= 2
+                    self.wig_data = self.wig_data.reshape(self.wigu_data.size // 2, 2).max(axis=1)
 
                     if wigu:
-                        wigu_data = wigu_data.reshape(wigu_data.size // 2, 2).max(axis=1)
+                        self.wigu_data = self.wigu_data.reshape(self.wigu_data.size // 2, 2).max(axis=1)
 
-            wig_data = wig_data.tolist()
+            self.wig_data = self.wig_data.tolist()
 
             if wigu:
-                wigu_data = wigu_data.tolist()
+                self.wigu_data = self.wigu_data.tolist()
 
         return {
-            'localqc': localqc_data,
-            'localqcres': localqc_res,
-            'wig': wig_data,
-            'wigu': wigu_data,
-            'wigres': wig_res
+            'localqc': self.localqc_data,
+            'localqcres': self.localqc_res,
+            'wig': self.wig_data,
+            'wigu': self.wigu_data,
+            'wigres': self.wig_res
         }
 
 

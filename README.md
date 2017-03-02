@@ -68,10 +68,12 @@ If you need to retrieve only one region at a time, you can chain the methods:
     >>> data = arr.get("chr8", 128723314, 128773314)
 
 The `get()` function accepts the following optional arguments:
-- *localqc*: if True, retrieves the localQCs in the genomic region (default: True)
-- *wig*: if True, retrieves the wiggles in the genomic region (default: True)
-- *wigu*: if True, Wiggles for unique reads are retrieved as well (default: True)
-- *shrink*: reduce the resolution so `resolution × shrink < region_length` by merging genomic features (default: 0, disabled)
+- *localqc*: if True, retrieves the localQCs in the genomic region (default: True).
+- *wig*: if True, retrieves the wiggles in the genomic region (default: True).
+- *wigu*: if True, Wiggles for unique reads are retrieved as well (default: True).
+- *nreps*: minimal number of times a bin is passing *dRCI < 10%* in the 5-replicates mode (default: 0, disabled). Must be between 
+ and 5.
+ - *shrink*: reduce the resolution so `resolution × shrink < region_length` by merging genomic features (default: 0, disabled).
 
 `data` is a dictionary with the following keys/values:
 - *localqc*: list of localQC dispersions. If the intensity was lower than the background threshold or if the dispersion was greater than or equal to 10, the intensity is 0 and the dispersion -1.
