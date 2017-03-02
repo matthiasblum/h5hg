@@ -103,7 +103,7 @@ class Array:
                             self.wigu_data = self.wigu_data[:-1]
 
                     self.wig_res *= 2
-                    self.wig_data = self.wig_data.reshape(self.wigu_data.size // 2, 2).max(axis=1)
+                    self.wig_data = self.wig_data.reshape(self.wig_data.size // 2, 2).max(axis=1)
 
                     if wigu:
                         self.wigu_data = self.wigu_data.reshape(self.wigu_data.size // 2, 2).max(axis=1)
