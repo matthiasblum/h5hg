@@ -55,7 +55,7 @@ You can tweak the scale limit with the `vmax` argument, and generate a triangula
 
     >>> mat.plot(vmax=100, astriu=True)
     
-## Chaining
+### Chaining
 
 If you need to retrieve only one region at a time, you can chain the methods:
 
@@ -63,8 +63,10 @@ If you need to retrieve only one region at a time, you can chain the methods:
     
 ## ChIP-Seq
 
-    >>> from h5hg import Array
-    >>> arr = Array("/home/data/hESC-H3K4me3.h5")
+### Fixed-size windows (bins)
+
+    >>> from h5hg import BinArray
+    >>> arr = BinArray("/home/data/hESC-H3K4me3.h5")
     >>> data = arr.get("chr8", 128723314, 128773314)
 
 The `get()` function accepts the following optional arguments:
@@ -83,3 +85,8 @@ The `get()` function accepts the following optional arguments:
 - *wigres*: int, resolution of Wiggles.
 
 If the genomic region is invalid, `data` is None.
+
+### Peaks
+
+    >>> from h5hg import PeakArray
+    >>> data = PeakArray("/home/data/hESC-H3K4me3.h5").get("chr8", 128723314, 128773314)

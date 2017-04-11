@@ -13,7 +13,7 @@ import numpy as np
 from scipy.sparse import coo_matrix
 
 
-class Array:
+class BinArray:
     def __init__(self, filename):
         self.filename = filename
         self.localqc_res = 500
@@ -122,6 +122,38 @@ class Array:
         }
 
 
+class PeakArray:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def get(self, chrom, start, end, pvalue=0):
+        try:
+            pvalue = -math.log10(pvalue)
+        except ValueError:
+            pvalue = None
+
+        with h5py.File(self.filename, 'r') as fh:
+            dset = fh.get(chrom)
+
+            if dset is None:
+                return None
+
+            if pvalue is None:
+                data = dset[
+                    (dset['start'] >= start) &
+                    (dset['start'] < end)
+                ]
+            else:
+                data = dset[
+                    (dset['start'] >= start) &
+                    (dset['start'] < end) &
+                    (dset['pv'] > pvalue)
+                    ]
+
+            return data.tolist()
+
+
+
 class Matrix:
     def __init__(self, filename, assembly=None, db=None):
         # HDF5 file
@@ -200,7 +232,7 @@ class Matrix:
                 (dset['col'] >= x) &
                 (dset['col'] < y) &
                 (dset['data'] >= mincount)
-            ]
+                ]
 
         try:
             self.p90 = np.percentile(_dset['data'], 90)
@@ -218,7 +250,7 @@ class Matrix:
                     (_dset['disp90'] < maxdisp) &
                     (_dset['disp70'] < maxdisp) &
                     (_dset['disp50'] < maxdisp)
-                ]
+                    ]
 
             self.values = data['data']
         elif sampling == 90:
