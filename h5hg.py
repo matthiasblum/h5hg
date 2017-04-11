@@ -153,7 +153,6 @@ class PeakArray:
             return data.tolist()
 
 
-
 class Matrix:
     def __init__(self, filename, assembly=None, db=None):
         # HDF5 file
