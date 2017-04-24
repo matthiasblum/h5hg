@@ -4,8 +4,10 @@
 import math
 import os
 import sqlite3
+import struct
 import sys
 import tempfile
+import zlib
 from subprocess import Popen, PIPE
 
 import h5py
@@ -127,30 +129,61 @@ class PeakArray:
         self.filename = filename
 
     def get(self, chrom, start, end, pvalue=0):
+        peaks = []
+
         try:
             pvalue = -math.log10(pvalue)
         except ValueError:
             pvalue = None
 
-        with h5py.File(self.filename, 'r') as fh:
-            dset = fh.get(chrom)
+        with open(self.filename, 'rb') as fh:
+            index_offset, chunksize = struct.unpack('<QI', fh.read(12))
+            fh.seek(index_offset)
 
-            if dset is None:
-                return None
+            while True:
+                data = fh.read(6)
+                if not data:
+                    break
 
-            if pvalue is None:
-                data = dset[
-                    (dset['start'] >= start) &
-                    (dset['start'] < end)
-                ]
-            else:
-                data = dset[
-                    (dset['start'] >= start) &
-                    (dset['start'] < end) &
-                    (dset['pv'] > pvalue)
-                    ]
+                l, n = struct.unpack('<HI', data)
+                chrom_name, = struct.unpack('<' + str(l) + 's', fh.read(l))
+                chrom_name = chrom_name.decode()
 
-            return data.tolist()
+                if chrom_name == chrom:
+                    o_start = None
+                    o_end = None
+
+                    for _ in range(n):
+                        pos, offset = struct.unpack('<IQ', fh.read(12))
+
+                        if pos + chunksize > start and o_start is None:
+                            o_start = offset
+                        elif pos >= end:
+                            o_end = offset
+                            break
+
+                    if o_end is None:
+                        o_end = offset
+
+                    fh.seek(o_start)
+
+                    while o_start != o_end:
+                        n, l = struct.unpack('<II', fh.read(8))
+                        zstring, = struct.unpack('<' + str(l) + 's', fh.read(l))
+                        data = struct.unpack('<' + n * 'IIId', zlib.decompress(zstring))
+                        for i in range(n):
+                            if data[i * 4] >= end:
+                                break
+                            elif data[i * 4 + 1] >= start and (pvalue is None or data[i * 4 + 3] >= pvalue):
+                                peaks.append((data[i * 4], data[i * 4 + 1], data[i * 4 + 2], data[i * 4 + 3]))
+
+                        o_start += 8 + l
+
+                    break
+                else:
+                    fh.seek(n * 12, 1)
+
+        return peaks
 
 
 class Matrix:

@@ -89,7 +89,11 @@ If the genomic region is invalid, `data` is None.
 ### Peaks
 
     >>> from h5hg import PeakArray
-    >>> data = PeakArray("/home/data/hESC-H3K4me3.h5").get("chr8", 128723314, 128773314)
+    >>> data = PeakArray("/home/data/hESC-H3K4me3.bin").get("chr8", 128723314, 128773314)
 
 `data` is a list of peaks. Each peak is stored as a tuple: (start, end, summit, -log10(pvalue)).
+
+#### Format
+
+Unlike Hi-C contacts, localQCs, and Wiggles, peaks are not stored in the HDF5 format, but in a custom binary format. Thus, retrieving a small subset is faster but it becomes particularly slow for large chuncks (> 10Mb).
 
