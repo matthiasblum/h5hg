@@ -128,13 +128,18 @@ class PeakArray:
     def __init__(self, filename):
         self.filename = filename
 
-    def get(self, chrom, start, end, pvalue=0):
+    def get(self, chrom, start, end, pvalue=0, qvalue=0):
         peaks = []
 
         try:
             pvalue = -math.log10(pvalue)
         except ValueError:
             pvalue = None
+
+        try:
+            qvalue = -math.log10(qvalue)
+        except ValueError:
+            qvalue = None
 
         with open(self.filename, 'rb') as fh:
             index_offset, chunksize = struct.unpack('<QI', fh.read(12))
@@ -170,12 +175,12 @@ class PeakArray:
                     while o_start != o_end:
                         n, l = struct.unpack('<II', fh.read(8))
                         zstring, = struct.unpack('<' + str(l) + 's', fh.read(l))
-                        data = struct.unpack('<' + n * 'IIId', zlib.decompress(zstring))
+                        data = struct.unpack('<' + n * 'IIIdd', zlib.decompress(zstring))
                         for i in range(n):
-                            if data[i * 4] >= end:
+                            if data[i * 5] >= end:
                                 break
-                            elif data[i * 4 + 1] >= start and (pvalue is None or data[i * 4 + 3] >= pvalue):
-                                peaks.append((data[i * 4], data[i * 4 + 1], data[i * 4 + 2], data[i * 4 + 3]))
+                            elif data[i * 5 + 1] >= start and (pvalue is None or data[i * 5 + 3] >= pvalue) and (qvalue is None or data[i * 5 + 4] >= pvalue):
+                                peaks.append((data[i * 5], data[i * 5 + 1], data[i * 5 + 2], data[i * 5 + 3], data[i * 5 + 4]))
 
                         o_start += 8 + l
 
