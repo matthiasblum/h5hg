@@ -63,11 +63,9 @@ class BinArray:
 
         return True
 
-    def get(self, chrom, start, end, localqc=True, wig=True, wigu=True, nreps=0, shrink=0):
+    def get(self, chrom, start, end, localqc=True, wig=True, wigu=True, nreps=0, resolution=None):
         if not self._get(chrom, start, end, localqc, wig, wigu):
             return None
-
-        region_size = end - start
 
         if localqc:
             if nreps:
@@ -85,8 +83,8 @@ class BinArray:
             # Keep only the dispersion
             self.localqc_data = self.localqc_data['dispersion']
 
-            if shrink:
-                while self.localqc_res * shrink < region_size:
+            if resolution:
+                while self.localqc_res < resolution:
                     if self.localqc_data.size % 2:
                         self.localqc_data = self.localqc_data[:-1]
 
@@ -96,8 +94,8 @@ class BinArray:
                 self.localqc_data = self.localqc_data.tolist()
 
         if wig:
-            if shrink:
-                while self.wig_res * shrink < region_size:
+            if resolution:
+                while self.wig_res < resolution:
                     if self.wig_data.size % 2:
                         self.wig_data = self.wig_data[:-1]
 
