@@ -91,7 +91,7 @@ class BinArray:
                     self.localqc_res *= 2
                     self.localqc_data = self.localqc_data.reshape(self.localqc_data.size // 2, 2).max(axis=1)
 
-                self.localqc_data = self.localqc_data.tolist()
+            self.localqc_data = self.localqc_data.tolist()
 
         if wig:
             if resolution:
