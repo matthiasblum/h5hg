@@ -126,18 +126,75 @@ class PeakArray:
     def __init__(self, filename):
         self.filename = filename
 
-    def get(self, chrom, start, end, pvalue=0, qvalue=0):
-        peaks = []
-
+    def get_all(self, **kwargs):
         try:
-            pvalue = -math.log10(pvalue)
+            pvalue = -math.log10(kwargs.get('pvalue', 0))
         except ValueError:
             pvalue = None
 
         try:
-            qvalue = -math.log10(qvalue)
+            qvalue = -math.log10(kwargs.get('qvalue', 0))
         except ValueError:
             qvalue = None
+
+        chroms = []
+
+        with open(self.filename, 'rb') as fh:
+            index_offset, chunksize = struct.unpack('<QI', fh.read(12))
+            fh.seek(index_offset)
+
+            while True:
+                data = fh.read(6)
+                if not data:
+                    break
+
+                l, n = struct.unpack('<HI', data)
+                chrom_name, = struct.unpack('<' + str(l) + 's', fh.read(l))
+                chrom_name = chrom_name.decode()
+
+                # pos/offset of chromosome's 1st block
+                pos, offset = struct.unpack('<IQ', fh.read(12))
+
+                chroms.append(dict(name=chrom_name, offset=offset, n_blocks=n, peaks=[]))
+
+                # skip remaining blocks
+                fh.seek((n - 1) * 12, 1)
+
+            # Sort chromosomes by file offset
+            chroms.sort(key=lambda c: c['offset'])
+
+            # Go to body
+            fh.seek(12)
+
+            for i, c in enumerate(chroms):
+                for _ in range(c['n_blocks']):
+                    n, l = struct.unpack('<II', fh.read(8))
+                    zstring, = struct.unpack('<' + str(l) + 's', fh.read(l))
+                    data = struct.unpack('<' + n * 'IIIdd', zlib.decompress(zstring))
+
+                    for j in range(n):
+                        if (pvalue is None or data[j * 5 + 3] >= pvalue) and (qvalue is None or data[j * 5 + 4] >= pvalue):
+                            chroms[i]['peaks'].append(
+                                (data[j * 5], data[j * 5 + 1], data[j * 5 + 2], data[j * 5 + 3], data[j * 5 + 4])
+                            )
+
+                chroms[i].pop('n_blocks')
+                chroms[i].pop('offset')
+
+        return chroms
+
+    def get(self, chrom, start, end, **kwargs):
+        try:
+            pvalue = -math.log10(kwargs.get('pvalue', 0))
+        except ValueError:
+            pvalue = None
+
+        try:
+            qvalue = -math.log10(kwargs.get('qvalue', 0))
+        except ValueError:
+            qvalue = None
+
+        peaks = []
 
         with open(self.filename, 'rb') as fh:
             index_offset, chunksize = struct.unpack('<QI', fh.read(12))
