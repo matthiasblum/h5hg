@@ -129,12 +129,12 @@ class PeakArray:
     def get_all(self, **kwargs):
         try:
             pvalue = -math.log10(kwargs.get('pvalue', 0))
-        except ValueError:
+        except (TypeError, ValueError):
             pvalue = None
 
         try:
             qvalue = -math.log10(kwargs.get('qvalue', 0))
-        except ValueError:
+        except (TypeError, ValueError):
             qvalue = None
 
         chroms = []
