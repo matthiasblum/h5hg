@@ -24,11 +24,10 @@ class BinArray:
         self.wig_data = None
         self.wigu_data = None
 
-    def find_overlapping_wig(self, regions, nodup=False):
-        result = {}
+    def find_overlapping_wig(self, intervals, nodup=False):
         with h5py.File(self.filename, 'r') as fh:
-            for chrom_name in regions:
-                intervals = regions[chrom_name]
+            for chrom_name in intervals:
+                chrom_intervals = intervals[chrom_name]
 
                 grp = fh.get(chrom_name)
                 if grp is None:
@@ -38,21 +37,8 @@ class BinArray:
                 dset = grp.get('wigs')
                 dset = dset[:, 1].tolist() if nodup else dset[:, 0].tolist()
 
-                chrom_result = []
-
-                for itv in intervals:
-                    # chrom_result.append([(x * res, dset[x]) for x in range(
-                    #     itv['start'] // res,
-                    #     (itv['end'] + res - 1) // res
-                    # )])
-                    chrom_result.append([dset[x] for x in range(
-                        itv['start'] // res,
-                        (itv['end'] + res - 1) // res
-                    )])
-
-                result[chrom_name] = chrom_result
-
-        return result
+                for itv in chrom_intervals:
+                    itv['values'] = [dset[x] for x in range(itv['start'] // res, (itv['end'] + res - 1) // res)]
 
     def _get(self, chrom, start, end, localqc=True, wig=True, wigu=True):
         self.localqc_res = 500
