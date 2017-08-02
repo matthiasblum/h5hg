@@ -43,12 +43,12 @@ class BinArray:
 
                 for itv in intervals:
                     # chrom_result.append([(x * res, dset[x]) for x in range(
-                    #     start=(itv['start'] // res),
-                    #     stop=((itv['end'] + res - 1) // res)
+                    #     itv['start'] // res,
+                    #     (itv['end'] + res - 1) // res
                     # )])
                     chrom_result.append([dset[x] for x in range(
-                        start=(itv['start'] // res),
-                        stop=((itv['end'] + res - 1) // res)
+                        itv['start'] // res,
+                        (itv['end'] + res - 1) // res
                     )])
 
                 result.append(dict(chrom=chrom_name, data=chrom_result))
