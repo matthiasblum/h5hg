@@ -26,6 +26,8 @@ class BinArray:
 
     def find_overlapping_wig(self, intervals, nodup=False):
         with h5py.File(self.filename, 'r') as fh:
+            res = None
+
             for chrom_name in intervals:
                 chrom_intervals = intervals[chrom_name]
 
@@ -39,6 +41,9 @@ class BinArray:
 
                 for itv in chrom_intervals:
                     itv['values'] = [dset[x] for x in range(itv['start'] // res, (itv['end'] + res - 1) // res)]
+
+        # returning a single resolution is a problem if there are chromosome with different resolutions
+        return res
 
     def _get(self, chrom, start, end, localqc=True, wig=True, wigu=True):
         self.localqc_res = 500
