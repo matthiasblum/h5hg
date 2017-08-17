@@ -238,6 +238,7 @@ class PeakArray:
                 if chrom_name == chrom:
                     o_start = None
                     o_end = None
+                    offset = None
 
                     for _ in range(n):
                         pos, offset = struct.unpack('<IQ', fh.read(12))
@@ -251,19 +252,20 @@ class PeakArray:
                     if o_end is None:
                         o_end = offset
 
-                    fh.seek(o_start)
+                    if o_start is not None:
+                        fh.seek(o_start)
 
-                    while o_start != o_end:
-                        n, l = struct.unpack('<II', fh.read(8))
-                        zstring, = struct.unpack('<' + str(l) + 's', fh.read(l))
-                        data = struct.unpack('<' + n * 'IIIdd', zlib.decompress(zstring))
-                        for i in range(n):
-                            if data[i * 5] >= end:
-                                break
-                            elif data[i * 5 + 1] >= start and (pvalue is None or data[i * 5 + 3] >= pvalue) and (qvalue is None or data[i * 5 + 4] >= pvalue):
-                                peaks.append((data[i * 5], data[i * 5 + 1], data[i * 5 + 2], data[i * 5 + 3], data[i * 5 + 4]))
+                        while o_start != o_end:
+                            n, l = struct.unpack('<II', fh.read(8))
+                            zstring, = struct.unpack('<' + str(l) + 's', fh.read(l))
+                            data = struct.unpack('<' + n * 'IIIdd', zlib.decompress(zstring))
+                            for i in range(n):
+                                if data[i * 5] >= end:
+                                    break
+                                elif data[i * 5 + 1] >= start and (pvalue is None or data[i * 5 + 3] >= pvalue) and (qvalue is None or data[i * 5 + 4] >= pvalue):
+                                    peaks.append((data[i * 5], data[i * 5 + 1], data[i * 5 + 2], data[i * 5 + 3], data[i * 5 + 4]))
 
-                        o_start += 8 + l
+                            o_start += 8 + l
 
                     break
                 else:
