@@ -199,7 +199,7 @@ class PeakArray:
                     data = struct.unpack('<' + n * 'IIIdd', zlib.decompress(zstring))
 
                     for j in range(n):
-                        if (pvalue is None or data[j * 5 + 3] >= pvalue) and (qvalue is None or data[j * 5 + 4] >= pvalue):
+                        if (pvalue is None or data[j * 5 + 3] >= pvalue) and (qvalue is None or data[j * 5 + 4] >= qvalue):
                             chroms[i]['peaks'].append(
                                 (data[j * 5], data[j * 5 + 1], data[j * 5 + 2], data[j * 5 + 3], data[j * 5 + 4])
                             )
@@ -262,7 +262,7 @@ class PeakArray:
                             for i in range(n):
                                 if data[i * 5] >= end:
                                     break
-                                elif data[i * 5 + 1] >= start and (pvalue is None or data[i * 5 + 3] >= pvalue) and (qvalue is None or data[i * 5 + 4] >= pvalue):
+                                elif data[i * 5 + 1] >= start and (pvalue is None or data[i * 5 + 3] >= pvalue) and (qvalue is None or data[i * 5 + 4] >= qvalue):
                                     peaks.append((data[i * 5], data[i * 5 + 1], data[i * 5 + 2], data[i * 5 + 3], data[i * 5 + 4]))
 
                             o_start += 8 + l
