@@ -5,7 +5,7 @@ Accessing NGS data (ChIP-Seq, Hi-C) stored in HDF5 files.
 
 h5hg requires to following dependencies:
 - Python (&ge; 3) with the *h5py*, *numpy*, and *scipy* modules.
-- Gnuplot (&ge; 4.6.6, not tested with more recent versions) with the *pngcairo* terminal (only for plotting Hi-C data).
+- Gnuplot (4.6.6, not tested with other versions) with the *pngcairo* terminal (only for plotting Hi-C data).
 
 ## Hi-C loops
 
